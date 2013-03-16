@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Getopt::Long;
-use JSON;
 use LWP::UserAgent;
 
 my $pms = {'token' => "Gm5aCJyE9wngm5eW153Jzgx2BkM1d0"};
@@ -55,7 +54,7 @@ sub print_sounds {
 sub print_usage {
     print "$0 -u USERTOKEN [OPTIONS] MESSAGE\n";
     print "OPTIONS\n";
-    print "  -a,  --token APITOKEN               API token\n";
+    print "  -a,  --token APITOKEN               Optional API token\n";
     print "  -d,  --timestamp UNIXTIMESTAMP      Optional timestamp\n";
     print "  -h,  --help                         Show this help\n";
     print "  -l,  --url URL                      Optional link\n";
