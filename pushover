@@ -1,0 +1,68 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use JSON;
+use LWP::UserAgent;
+
+my $pms = {'token' => "Gm5aCJyE9wngm5eW153Jzgx2BkM1d0"};
+my $msg = '';
+
+GetOptions($pms, 'token|a=s',
+                 'url|l=s',
+                 'url_title|lt=s',
+                 'priority|p=i',
+                 'sound|s=s',
+                 'list-sounds|ls',
+                 'timestamp|d=i',
+                 'title|t=s',
+                 'user|u=s',
+                 'help|h');
+
+foreach(@ARGV) {
+    $pms->{message} .= "$_ ";
+}
+
+if($pms->{'list-sounds'}) {
+    print_sounds();
+    exit 0;
+}
+
+if(!$pms->{message} || !exists($pms->{user}) || exists($pms->{help})) {
+    print_usage();
+    exit 0;
+}
+
+LWP::UserAgent->new()->post("https://api.pushover.net/1/messages.json", $pms);
+
+sub print_sounds {
+    use JSON;
+    my $res = LWP::UserAgent->new()->get("https://api.pushover.net/1/sounds.json?token=$pms->{token}");
+    if($res->is_success) {
+        my $dec_res = decode_json($res->content);
+        
+        foreach(sort(keys($dec_res->{sounds}))) {
+            print "$_ ($dec_res->{sounds}->{$_})\n";
+        }
+
+    } else {
+        print "Error while retrieving sound list\n";
+    }
+}
+
+sub print_usage {
+    print "$0 -u USERTOKEN [OPTIONS] MESSAGE\n";
+    print "OPTIONS\n";
+    print "  -a,  --token APITOKEN               API token\n";
+    print "  -d,  --timestamp UNIXTIMESTAMP      Optional timestamp\n";
+    print "  -h,  --help                         Show this help\n";
+    print "  -l,  --url URL                      Optional link\n";
+    print "  -lt, --url_title URLTITLE           Optional url title\n";
+    print "  -ls, --list-sounds                  Retrieve available sounds\n";
+    print "  -p,  --priority -1|0|1              Optional priority(-1 - 2)\n";
+    print "  -s,  --sound SOUND                  Optional sounds. See -ls for possible sounds\n";
+    print "  -t,  --title TITLE                  Optional title\n";
+    print "  -u,  --user USERTOKEN               User token\n";
+}
