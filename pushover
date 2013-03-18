@@ -7,7 +7,6 @@ use Getopt::Long;
 use LWP::UserAgent;
 
 my $pms = {'token' => "Gm5aCJyE9wngm5eW153Jzgx2BkM1d0"};
-my $msg = '';
 
 GetOptions($pms, 'token|a=s',
                  'url|l=s',
