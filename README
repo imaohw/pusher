@@ -1,0 +1,12 @@
+pushover -u USERTOKEN [OPTIONS] MESSAGE
+    OPTIONS
+      -a,  --token APITOKEN               Optional API token
+      -d,  --timestamp UNIXTIMESTAMP      Optional timestamp
+      -h,  --help                         Show this help
+      -l,  --url URL                      Optional link
+      -lt, --url_title URLTITLE           Optional url title
+      -ls, --list-sounds                  Retrieve available sounds
+      -p,  --priority -1|0|1              Optional priority(-1 - 2)
+      -s,  --sound SOUND                  Optional sounds. See -ls for possible sounds
+      -t,  --title TITLE                  Optional title
+      -u,  --user USERTOKEN               User token
