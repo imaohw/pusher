@@ -1,4 +1,4 @@
-pushover -u USERTOKEN [OPTIONS] MESSAGE
+pusher -u USERTOKEN [OPTIONS] MESSAGE
     OPTIONS
       -a,  --token APITOKEN               Optional API token
       -d,  --timestamp UNIXTIMESTAMP      Optional timestamp
