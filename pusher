@@ -4,9 +4,17 @@ use strict;
 use warnings;
 
 use Getopt::Long;
+use JSON;
 use LWP::UserAgent;
 
-my $pms = {'token' => "Gm5aCJyE9wngm5eW153Jzgx2BkM1d0"};
+use Data::Dumper;
+
+my $token   = "Gm5aCJyE9wngm5eW153Jzgx2BkM1d0";
+my $msg_url = "https://api.pushover.net/1/messages.json";
+my $snd_url = "https://api.pushover.net/1/sounds.json";
+
+
+my $pms = {'token' => $token};
 
 GetOptions($pms, 'token|a=s',
                  'url|l=s',
@@ -24,29 +32,46 @@ foreach(@ARGV) {
 }
 
 if($pms->{'list-sounds'}) {
-    print_sounds();
-    exit 0;
-}
-
-if(!$pms->{message} || !exists($pms->{user}) || exists($pms->{help})) {
-    print_usage();
-    exit 0;
-}
-
-LWP::UserAgent->new()->post("https://api.pushover.net/1/messages.json", $pms);
-
-sub print_sounds {
-    use JSON;
-    my $res = LWP::UserAgent->new()->get("https://api.pushover.net/1/sounds.json?token=$pms->{token}");
-    if($res->is_success) {
-        my $dec_res = decode_json($res->content);
+    my $json = send_request($snd_url, {token => $token}, 1);
         
-        foreach(sort(keys($dec_res->{sounds}))) {
-            print "$_ ($dec_res->{sounds}->{$_})\n";
-        }
+    if($json->{status} == 1) {
+        print "Available notification sounds:\n\n";
 
+        foreach(sort(keys($json->{sounds}))) {
+            print "    $_ ($json->{sounds}->{$_})\n";
+        }
     } else {
-        print "Error while retrieving sound list\n";
+        print_errors($json);
+    }
+} elsif(!$pms->{message} || !exists($pms->{user}) || exists($pms->{help})) {
+    print_usage();
+} else {
+    my $json = send_request($msg_url, $pms);
+
+    if($json->{status} != 1) {
+        print_errors($json);
+    }
+}
+
+sub send_request {
+    my ($url, $para, $get) = @_;
+    
+    my $ua = LWP::UserAgent->new();    
+    my $res = $get ? $ua->get($url, $para) : $ua->post($url, $para);
+    
+    if($res->header('Client-Warning') && $res->header('Client-Warning') eq 'Internal response') {
+        return {status => -1, errors => ['Server unreachable']};
+    } else {
+        return decode_json($res->content);
+    }
+}
+
+sub print_errors {
+    my ($json) = @_;
+
+    print "Status: $json->{status}\n";
+    foreach(@{$json->{errors}}) {
+        print "    $_\n";
     }
 }
 
