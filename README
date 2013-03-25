@@ -1,12 +1,17 @@
+pusher -ls                                  Print available sounds
+pusher RECEIPT                              Request status of emergency messages
 pusher -u USERTOKEN [OPTIONS] MESSAGE
-    OPTIONS
-      -a,  --token APITOKEN               Optional API token
-      -d,  --timestamp UNIXTIMESTAMP      Optional timestamp
-      -h,  --help                         Show this help
-      -l,  --url URL                      Optional link
-      -lt, --url_title URLTITLE           Optional url title
-      -ls, --list-sounds                  Retrieve available sounds
-      -p,  --priority -1|0|1              Optional priority(-1 - 2)
-      -s,  --sound SOUND                  Optional sounds. See -ls for possible sounds
-      -t,  --title TITLE                  Optional title
-      -u,  --user USERTOKEN               User token
+
+  OPTIONS
+    -a,  --token APITOKEN               Optional API token
+    -c,  --callback URL                 Optional callback URL for emergency messages
+    -d,  --timestamp UNIXTIMESTAMP      Optional timestamp
+    -e,  --expire SECONDS               Send retries for emergency messages every SECONDS seconds
+    -h,  --help                         Show this help
+    -l,  --url URL                      Optional link
+    -lt, --url_title URLTITLE           Optional url title
+    -p,  --priority -1|0|1|2            Optional priority(-1 - 2)
+    -r,  --retry SECONDS                Send retries of emergency messages every SECONDS seconds
+    -s,  --sound SOUND                  Optional sounds. See -ls for possible sounds
+    -t,  --title TITLE                  Optional title
+    -u,  --user USERTOKEN               User token
