@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
@@ -7,12 +7,10 @@ use Getopt::Long;
 use JSON;
 use LWP::UserAgent;
 
-use Data::Dumper;
-
 my $token   = "Gm5aCJyE9wngm5eW153Jzgx2BkM1d0";
 my $msg_url = "https://api.pushover.net/1/messages.json";
 my $snd_url = "https://api.pushover.net/1/sounds.json";
-
+my $rct_url = "https://api.pushover.net/1/receipts/";
 
 my $pms = {'token' => $token};
 
@@ -20,6 +18,9 @@ GetOptions($pms, 'token|a=s',
                  'url|l=s',
                  'url_title|lt=s',
                  'priority|p=i',
+                 'retry|r=i',
+                 'expire|e=i',
+                 'callback|c=s',
                  'sound|s=s',
                  'list-sounds|ls',
                  'timestamp|d=i',
@@ -43,13 +44,30 @@ if($pms->{'list-sounds'}) {
     } else {
         print_errors($json);
     }
-} elsif(!$pms->{message} || !exists($pms->{user}) || exists($pms->{help})) {
+} elsif(!$pms->{message} || exists($pms->{help})) {
     print_usage();
+} elsif(!exists($pms->{user})) {
+    my $json = send_request("$rct_url$ARGV[0].json?token=$token", {}, 1);
+
+    if($json->{status} == 1) {
+        print "Status of emergency message $pms->{message}\n";
+        print "  Acknowledged:      $json->{acknowledged}\n";
+        print "  Acknowledged at:   $json->{acknowledged_at}\n";
+        print "  Last delivered at: $json->{last_delivered_at}\n";
+        print "  Expired:           $json->{expired}\n";
+        print "  Expires at:        $json->{expires_at}\n";
+        print "  Called back:       $json->{called_back}\n";
+        print "  Called back at:    $json->{called_back_at}\n";
+    } else {
+        print_errors($json);
+    }
 } else {
     my $json = send_request($msg_url, $pms);
 
     if($json->{status} != 1) {
         print_errors($json);
+    } elsif($json->{receipt}) {
+        print "$json->{receipt}\n";
     }
 }
 
@@ -76,16 +94,20 @@ sub print_errors {
 }
 
 sub print_usage {
-    print "$0 -u USERTOKEN [OPTIONS] MESSAGE\n";
-    print "OPTIONS\n";
-    print "  -a,  --token APITOKEN               Optional API token\n";
-    print "  -d,  --timestamp UNIXTIMESTAMP      Optional timestamp\n";
-    print "  -h,  --help                         Show this help\n";
-    print "  -l,  --url URL                      Optional link\n";
-    print "  -lt, --url_title URLTITLE           Optional url title\n";
-    print "  -ls, --list-sounds                  Retrieve available sounds\n";
-    print "  -p,  --priority -1|0|1              Optional priority(-1 - 2)\n";
-    print "  -s,  --sound SOUND                  Optional sounds. See -ls for possible sounds\n";
-    print "  -t,  --title TITLE                  Optional title\n";
-    print "  -u,  --user USERTOKEN               User token\n";
+    print "$0 -ls                                  Print available sounds\n";
+    print "$0 RECEIPT                              Request status of emergency messages\n";
+    print "$0 -u USERTOKEN [OPTIONS] MESSAGE\n\n";
+    print "  OPTIONS\n";
+    print "    -a,  --token APITOKEN               Optional API token\n";
+    print "    -c,  --callback URL                 Optional callback URL for emergency messages\n";
+    print "    -d,  --timestamp UNIXTIMESTAMP      Optional timestamp\n";
+    print "    -e,  --expire SECONDS               Send retries for emergency messages every SECONDS seconds\n";
+    print "    -h,  --help                         Show this help\n";
+    print "    -l,  --url URL                      Optional link\n";
+    print "    -lt, --url_title URLTITLE           Optional url title\n";
+    print "    -p,  --priority -1|0|1|2            Optional priority(-1 - 2)\n";
+    print "    -r,  --retry SECONDS                Send retries of emergency messages every SECONDS seconds\n";
+    print "    -s,  --sound SOUND                  Optional sounds. See -ls for possible sounds\n";
+    print "    -t,  --title TITLE                  Optional title\n";
+    print "    -u,  --user USERTOKEN               User token\n";
 }
