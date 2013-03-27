@@ -14,7 +14,7 @@ my $rct_url = "https://api.pushover.net/1/receipts/";
 
 my $pms = {'token' => $token};
 
-exit 0 if !GetOptions($pms, 'token|a=s',
+exit 1 if !GetOptions($pms, 'token|a=s',
                             'url|l=s',
                             'url_title|lt=s',
                             'priority|p=i',
@@ -60,12 +60,14 @@ if($pms->{'list-sounds'}) {
         print "  Called back at:    $json->{called_back_at}\n";
     } else {
         print_errors($json);
+        exit 1;
     }
 } else {
     my $json = send_request($msg_url, $pms);
 
     if($json->{status} != 1) {
         print_errors($json);
+        exit 1;
     } elsif($json->{receipt}) {
         print "$json->{receipt}\n";
     }
