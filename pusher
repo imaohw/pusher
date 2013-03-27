@@ -14,19 +14,19 @@ my $rct_url = "https://api.pushover.net/1/receipts/";
 
 my $pms = {'token' => $token};
 
-GetOptions($pms, 'token|a=s',
-                 'url|l=s',
-                 'url_title|lt=s',
-                 'priority|p=i',
-                 'retry|r=i',
-                 'expire|e=i',
-                 'callback|c=s',
-                 'sound|s=s',
-                 'list-sounds|ls',
-                 'timestamp|d=i',
-                 'title|t=s',
-                 'user|u=s',
-                 'help|h');
+exit 0 if !GetOptions($pms, 'token|a=s',
+                            'url|l=s',
+                            'url_title|lt=s',
+                            'priority|p=i',
+                            'retry|r=i',
+                            'expire|e=i',
+                            'callback|c=s',
+                            'sound|s=s',
+                            'list-sounds|ls',
+                            'timestamp|d=i',
+                            'title|t=s',
+                            'user|u=s',
+                            'help|h');
 
 foreach(@ARGV) {
     $pms->{message} .= "$_ ";
@@ -87,9 +87,9 @@ sub send_request {
 sub print_errors {
     my ($json) = @_;
 
-    print "Status: $json->{status}\n";
+    print STDERR "Status: $json->{status}\n";
     foreach(@{$json->{errors}}) {
-        print "    $_\n";
+        print STDERR "    $_\n";
     }
 }
 
