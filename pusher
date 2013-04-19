@@ -77,7 +77,7 @@ sub send_request {
     my ($url, $para, $get) = @_;
     
     my $ua = LWP::UserAgent->new();    
-    my $res = $get ? $ua->get($url, $para) : $ua->post($url, $para);
+    my $res = $get ? $ua->get("$url?token=$para->{token}") : $ua->post($url, $para);
     
     if($res->header('Client-Warning') && $res->header('Client-Warning') eq 'Internal response') {
         return {status => -1, errors => ['Server unreachable']};
