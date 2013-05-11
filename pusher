@@ -12,7 +12,7 @@ my $msg_url = "https://api.pushover.net/1/messages.json";
 my $snd_url = "https://api.pushover.net/1/sounds.json";
 my $rct_url = "https://api.pushover.net/1/receipts/";
 
-my $pms = {'token' => $token};
+my $pms = { 'token' => $token };
 
 exit 1 if !GetOptions($pms, 'token|a=s',
                             'url|l=s',
@@ -28,9 +28,8 @@ exit 1 if !GetOptions($pms, 'token|a=s',
                             'user|u=s',
                             'help|h');
 
-foreach(@ARGV) {
-    $pms->{message} .= "$_ ";
-}
+
+$pms->{message} = join(' ', @ARGV);
 
 if($pms->{'list-sounds'}) {
     my $json = send_request($snd_url, {token => $token}, 1);
@@ -47,7 +46,8 @@ if($pms->{'list-sounds'}) {
 } elsif(!$pms->{message} || exists($pms->{help})) {
     print_usage();
 } elsif(!exists($pms->{user})) {
-    my $json = send_request("$rct_url$ARGV[0].json?token=$token", {}, 1);
+    my $json = send_request("$rct_url$pms->{message}.json", {token => $token}, 1);
+    
 
     if($json->{status} == 1) {
         print "Status of emergency message $pms->{message}\n";
@@ -103,7 +103,7 @@ sub print_usage {
     print "    -a,  --token APITOKEN               Optional API token\n";
     print "    -c,  --callback URL                 Optional callback URL for emergency messages\n";
     print "    -d,  --timestamp UNIXTIMESTAMP      Optional timestamp\n";
-    print "    -e,  --expire SECONDS               Send retries for emergency messages every SECONDS seconds\n";
+    print "    -e,  --expire SECONDS               Send retries for emergency messages for the next SECONDS seconds\n";
     print "    -h,  --help                         Show this help\n";
     print "    -l,  --url URL                      Optional link\n";
     print "    -lt, --url_title URLTITLE           Optional url title\n";
