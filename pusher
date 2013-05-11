@@ -8,11 +8,23 @@ use JSON;
 use LWP::UserAgent;
 
 my $token   = "Gm5aCJyE9wngm5eW153Jzgx2BkM1d0";
+my $config_file = "$ENV{HOME}/.config/pusher/config";
+
 my $msg_url = "https://api.pushover.net/1/messages.json";
 my $snd_url = "https://api.pushover.net/1/sounds.json";
 my $rct_url = "https://api.pushover.net/1/receipts/";
 
-my $pms = { 'token' => $token };
+my $pms = { token => $token };
+
+if(-e $config_file) {
+    open(FILE, "<$config_file");
+    while(<FILE>) {
+        if($_ =~ /^(\w*) (\w*)$/) {
+            $pms->{$1} = $2;
+        }
+    }
+    close(FILE);
+}
 
 exit 1 if !GetOptions($pms, 'token|a=s',
                             'url|l=s',
@@ -21,6 +33,7 @@ exit 1 if !GetOptions($pms, 'token|a=s',
                             'retry|r=i',
                             'expire|e=i',
                             'callback|c=s',
+                            'receipt|rp=s',
                             'sound|s=s',
                             'list-sounds|ls',
                             'timestamp|d=i',
@@ -33,7 +46,7 @@ $pms->{message} = join(' ', @ARGV);
 
 if($pms->{'list-sounds'}) {
     my $json = send_request($snd_url, {token => $token}, 1);
-        
+
     if($json->{status} == 1) {
         print "Available notification sounds:\n\n";
 
@@ -43,11 +56,9 @@ if($pms->{'list-sounds'}) {
     } else {
         print_errors($json);
     }
-} elsif(!$pms->{message} || exists($pms->{help})) {
-    print_usage();
-} elsif(!exists($pms->{user})) {
-    my $json = send_request("$rct_url$pms->{message}.json", {token => $token}, 1);
-    
+
+} elsif($pms->{receipt}) {
+    my $json = send_request("$rct_url$pms->{receipt}.json", {token => $token}, 1);
 
     if($json->{status} == 1) {
         print "Status of emergency message $pms->{message}\n";
@@ -62,6 +73,8 @@ if($pms->{'list-sounds'}) {
         print_errors($json);
         exit 1;
     }
+} elsif(!$pms->{message} || !$pms->{user} || exists($pms->{help})) {
+    print_usage();
 } else {
     my $json = send_request($msg_url, $pms);
 
@@ -76,7 +89,7 @@ if($pms->{'list-sounds'}) {
 sub send_request {
     my ($url, $para, $get) = @_;
     
-    my $ua = LWP::UserAgent->new();    
+    my $ua = LWP::UserAgent->new();
     my $res = $get ? $ua->get("$url?token=$para->{token}") : $ua->post($url, $para);
     
     if($res->header('Client-Warning') && $res->header('Client-Warning') eq 'Internal response') {
@@ -96,9 +109,7 @@ sub print_errors {
 }
 
 sub print_usage {
-    print "$0 -ls                                  Print available sounds\n";
-    print "$0 RECEIPT                              Request status of emergency messages\n";
-    print "$0 -u USERTOKEN [OPTIONS] MESSAGE\n\n";
+    print "$0 [OPTIONS] MESSAGE\n\n";
     print "  OPTIONS\n";
     print "    -a,  --token APITOKEN               Optional API token\n";
     print "    -c,  --callback URL                 Optional callback URL for emergency messages\n";
@@ -106,10 +117,13 @@ sub print_usage {
     print "    -e,  --expire SECONDS               Send retries for emergency messages for the next SECONDS seconds\n";
     print "    -h,  --help                         Show this help\n";
     print "    -l,  --url URL                      Optional link\n";
+    print "    -ls, --list-sounds                  Print available sounds\n"; 
     print "    -lt, --url_title URLTITLE           Optional url title\n";
     print "    -p,  --priority -1|0|1|2            Optional priority(-1 - 2)\n";
     print "    -r,  --retry SECONDS                Send retries of emergency messages every SECONDS seconds\n";
+    print "    -rp, --receipt RECEIPT              Request status of emergency messages\n";
     print "    -s,  --sound SOUND                  Optional sounds. See -ls for possible sounds\n";
     print "    -t,  --title TITLE                  Optional title\n";
     print "    -u,  --user USERTOKEN               User token\n";
 }
+
