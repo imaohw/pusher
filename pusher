@@ -45,7 +45,7 @@ exit 1 if !GetOptions($pms, 'token|a=s',
 $pms->{message} = join(' ', @ARGV);
 
 if($pms->{'list-sounds'}) {
-    my $json = send_request($snd_url, {token => $token}, 1);
+    my $json = send_request($snd_url, $pms, 1);
 
     if($json->{status} == 1) {
         print "Available notification sounds:\n\n";
@@ -58,7 +58,7 @@ if($pms->{'list-sounds'}) {
     }
 
 } elsif($pms->{receipt}) {
-    my $json = send_request("$rct_url$pms->{receipt}.json", {token => $token}, 1);
+    my $json = send_request("$rct_url$pms->{receipt}.json", $pms, 1);
 
     if($json->{status} == 1) {
         print "Status of emergency message $pms->{message}\n";
