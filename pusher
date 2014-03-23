@@ -44,6 +44,10 @@ exit 1 if !GetOptions($pms, 'token|a=s',
 
 $pms->{message} = join(' ', @ARGV);
 
+if(!$pms->{message}) {
+    $pms->{message} = <STDIN>;
+}
+
 if($pms->{'list-sounds'}) {
     my $json = send_request($snd_url, $pms, 1);
 
